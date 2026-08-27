@@ -123,7 +123,7 @@ Configure the archive folder in:
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
     <appSettings>
-        <add key="ArchiveFolderPath" value="c:\Data\Copilot\Archive\"/>
+        <add key="ArchiveFolderPath" value="c:\path\to\archive"/>
     </appSettings>
 </configuration>
 ```
