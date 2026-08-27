@@ -1,0 +1,27 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider / JetBrains
+.idea/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS junk
+.DS_Store
+Thumbs.db

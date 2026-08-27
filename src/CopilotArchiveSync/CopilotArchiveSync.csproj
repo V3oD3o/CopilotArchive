@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+
+    <AssemblyName>CopilotArhiveSync</AssemblyName>
+    <RootNamespace>Brx.CopilotArhiveSync</RootNamespace>
+    <CLSCompliant>true</CLSCompliant>
+
+    <AssemblyTitle>CopilotArhiveSync</AssemblyTitle>
+    <Company>N/A</Company>
+    <Product>CopilotArhiveSync</Product>
+    <Copyright>Copyright (C) 2026 Daniel Vargha</Copyright>
+
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <NoWarn>$(NoWarn);1591;IDE0130</NoWarn>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FlatFileMonger" Version="1.0.3" />
+  </ItemGroup>
+
+</Project>

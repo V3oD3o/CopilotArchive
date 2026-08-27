@@ -1,0 +1,50 @@
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- VS Code palette -->
+    <Color x:Key="DarkBackground">#1e1e1e</Color>
+    <Color x:Key="DarkPanel">#252526</Color>
+    <Color x:Key="DarkBorder">#3c3c3c</Color>
+    <Color x:Key="DarkHover">#2a2d2e</Color>
+    <Color x:Key="DarkSelected">#094771</Color>
+
+    <Color x:Key="LightText">#d4d4d4</Color>
+    <Color x:Key="LightTextDim">#888888</Color>
+    <Color x:Key="BrightText">#ffffff</Color>
+
+    <Color x:Key="AccentBlue">#007ACC</Color>
+    <Color x:Key="AccentBlueGlow">#1A8CE6</Color>
+
+    <Color x:Key="ButtonBackground">#3c3c3c</Color>
+    <Color x:Key="ButtonHover">#454545</Color>
+    <Color x:Key="ButtonPressed">#2a2a2a</Color>
+
+    <Color x:Key="ScrollBarTrack">#2a2d2e</Color>
+    <Color x:Key="ScrollBarThumb">#4b4b4b</Color>
+    <Color x:Key="ScrollBarGlyph">#AAAAAA</Color>
+    <Color x:Key="ScrollBarBorder">#3c3c3c</Color>
+    <Color x:Key="ScrollBarLight">#454545</Color>
+
+    <SolidColorBrush x:Key="BrushAccentBlue" Color="{StaticResource AccentBlue}"/>
+
+    <SolidColorBrush x:Key="BrushDarkBackground" Color="{StaticResource DarkBackground}"/>
+    <SolidColorBrush x:Key="BrushDarkPanel" Color="{StaticResource DarkPanel}"/>
+    <SolidColorBrush x:Key="BrushDarkBorder" Color="{StaticResource DarkBorder}"/>
+    <SolidColorBrush x:Key="BrushDarkHover" Color="{StaticResource DarkHover}"/>
+    <SolidColorBrush x:Key="BrushDarkSelected" Color="{StaticResource DarkSelected}"/>
+
+    <SolidColorBrush x:Key="BrushLightText" Color="{StaticResource LightText}"/>
+    <SolidColorBrush x:Key="BrushBrightText" Color="{StaticResource BrightText}"/>
+    <SolidColorBrush x:Key="BrushLightTextDim" Color="{StaticResource LightTextDim}"/>
+
+    <SolidColorBrush x:Key="BrushButtonBackground" Color="{StaticResource ButtonBackground}"/>
+    <SolidColorBrush x:Key="BrushButtonHover" Color="{StaticResource ButtonHover}"/>
+    <SolidColorBrush x:Key="BrushButtonPressed" Color="{StaticResource ButtonPressed}"/>
+
+    <SolidColorBrush x:Key="BrushScrollBarTrack" Color="{StaticResource ScrollBarTrack}"/>
+    <SolidColorBrush x:Key="BrushScrollBarThumb" Color="{StaticResource ScrollBarThumb}"/>
+    <SolidColorBrush x:Key="BrushScrollBarBorder" Color="{StaticResource ScrollBarBorder}"/>
+    <SolidColorBrush x:Key="BrushScrollBarLight" Color="{StaticResource ScrollBarLight}"/>
+
+</ResourceDictionary>

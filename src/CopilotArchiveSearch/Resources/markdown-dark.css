@@ -1,0 +1,85 @@
+body {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 20px;
+}
+
+a:link { color: #4FC1FF; }
+a:visited { color: #C586C0; }
+
+hr {
+    border: 0;
+    border-top: 1px solid #3C3C3C;
+}
+
+pre, code {
+    background-color: #252526;
+    color: #dcdcaa;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+pre, code {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre;
+}
+
+pre {
+    background-color: #252526;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+code {
+    display: block;
+}
+
+blockquote {
+    border-left: 4px solid #3C3C3C;
+    padding-left: 10px;
+    color: #cccccc;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+}
+
+/* Custom text selection color */
+::selection {
+    background-color: #007ACC; /* AccentBlue */
+    color: #ffffff;
+}
+
+/* WPF-style scrollbars for WebView2 */
+::-webkit-scrollbar {
+    width: 18px;
+    height: 18px;
+    background: #2a2d2e; /* ScrollBarTrack */
+}
+
+::-webkit-scrollbar-track {
+    background: #2a2d2e; /* ScrollBarTrack */
+    border: none;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #4b4b4b; /* ScrollBarThumb */
+    border: 0px solid #2a2d2e; /* Track color */
+    border-radius: 0; /* rectangular */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #007ACC; /* AccentBlue */
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #1A8CE6; /* AccentBlueGlow */
+}
+
+::-webkit-scrollbar-corner {
+    background: #2a2d2e; /* ScrollBarTrack */
+}
