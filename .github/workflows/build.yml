@@ -28,13 +28,13 @@ jobs:
       - name: Build
         run: dotnet build CopilotArchive.sln --configuration Release
 
-      # --- FIRST EXECUTABLE ---
+      # --- PUBLISH SYNC (framework-dependent, normal way) ---
       - name: Publish CopilotArchiveSync
         run: |
           dotnet publish src/CopilotArchiveSync/CopilotArchiveSync.csproj \
             -c Release \
             -r win-x64 \
-            --self-contained true \
+            --self-contained false \
             -o publish/sync-win-x64
 
       - name: Upload Sync Artifact
@@ -43,13 +43,13 @@ jobs:
           name: CopilotArchiveSync-win-x64
           path: publish/sync-win-x64/
 
-      # --- SECOND EXECUTABLE ---
+      # --- PUBLISH SEARCH (framework-dependent, normal way) ---
       - name: Publish CopilotArchiveSearch
         run: |
           dotnet publish src/CopilotArchiveSearch/CopilotArchiveSearch.csproj \
             -c Release \
             -r win-x64 \
-            --self-contained true \
+            --self-contained false \
             -o publish/search-win-x64
 
       - name: Upload Search Artifact
@@ -66,18 +66,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Download both artifacts
+      # Download both artifacts into combined folder
       - name: Download Sync Artifact
         uses: actions/download-artifact@v4
         with:
           name: CopilotArchiveSync-win-x64
-          path: release/sync/
+          path: release/combined/CopilotArchiveSync/
 
       - name: Download Search Artifact
         uses: actions/download-artifact@v4
         with:
           name: CopilotArchiveSearch-win-x64
-          path: release/search/
+          path: release/combined/CopilotArchiveSearch/
+
+      # Create ZIP containing both apps
+      - name: Create Combined ZIP
+        run: |
+          cd release
+          zip -r CopilotArchive-${{ github.ref_name }}.zip combined
 
       - name: Create GitHub Release
         id: create_release
@@ -90,23 +96,13 @@ jobs:
           draft: false
           prerelease: false
 
-      # Upload both executables to the release
-      - name: Upload Sync EXE
+      # Upload the combined ZIP
+      - name: Upload Combined ZIP
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/sync/CopilotArchiveSync.exe
-          asset_name: CopilotArchiveSync.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload Search EXE
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/search/CopilotArchiveSearch.exe
-          asset_name: CopilotArchiveSearch.exe
-          asset_content_type: application/octet-stream
+          asset_path: release/CopilotArchive-${{ github.ref_name }}.zip
+          asset_name: CopilotArchive-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
