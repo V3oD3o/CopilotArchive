@@ -1,58 +1,57 @@
-﻿using System.Collections.Generic;
+﻿namespace Brx.CopilotArchiveSearch.Search;
+
 using System.Data.OleDb;
 using System.IO;
 
-namespace CopilotArchiveSearch.Search
+public static class IndexedSearch
 {
-   public static class IndexedSearch
+   public enum QueryMode
    {
-      public enum QueryMode
-      {
-         RunAsIs,
-         RunAsPrefix,
-         DontRun
-      }
+      RunAsIs,
+      RunAsPrefix,
+      DontRun
+   }
 
-      public static QueryMode GetQueryMode(string query)
-      {
-         if (string.IsNullOrWhiteSpace(query))
-            return QueryMode.DontRun;
+   public static QueryMode GetQueryMode(string query)
+   {
+      if (string.IsNullOrWhiteSpace(query))
+         return QueryMode.DontRun;
 
-         query = query.Trim();
+      query = query.Trim();
 
-         // 1. Unclosed quotes -> incomplete phrase
-         int quoteCount = query.Count(c => c == '"');
-         if (quoteCount % 2 == 1)
-            return QueryMode.DontRun;
+      // 1. Unclosed quotes -> incomplete phrase
+      int quoteCount = query.Count(c => c == '"');
+      if (quoteCount % 2 == 1)
+         return QueryMode.DontRun;
 
-         // Tokenize
-         var tokens = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-         string lastToken = tokens[^1];
+      // Tokenize
+      var tokens = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+      string lastToken = tokens[^1];
 
-         // 2. Last token is an operator -> incomplete expression
-         string[] ops = { "AND", "OR", "NOT", "NEAR" };
-         if (ops.Contains(lastToken.ToUpperInvariant()))
-            return QueryMode.DontRun;
+      // 2. Last token is an operator -> incomplete expression
+      string[] ops = { "AND", "OR", "NOT", "NEAR" };
+      if (ops.Contains(lastToken.ToUpperInvariant()))
+         return QueryMode.DontRun;
 
-         // 3. If last char is alphanumeric -> prefix search
-         char lastChar = query[^1];
-         if (char.IsLetterOrDigit(lastChar))
-            return QueryMode.RunAsPrefix;
+      // 3. If last char is alphanumeric -> prefix search
+      char lastChar = query[^1];
+      if (char.IsLetterOrDigit(lastChar))
+         return QueryMode.RunAsPrefix;
 
-         // 4. Otherwise -> run as-is
-         return QueryMode.RunAsIs;
-      }
-      
-      public static IEnumerable<SearchResult> Search(string folder, string query, bool queryAsPrefix)
-      {
-         using var conn = new OleDbConnection(
-             "Provider=Search.CollatorDSO;Extended Properties='Application=Windows';");
+      // 4. Otherwise -> run as-is
+      return QueryMode.RunAsIs;
+   }
+   
+   public static IEnumerable<SearchResult> Search(string folder, string query, bool queryAsPrefix)
+   {
+      using var conn = new OleDbConnection(
+          "Provider=Search.CollatorDSO;Extended Properties='Application=Windows';");
 
-         conn.Open();
+      conn.Open();
 
-         string path = Path.TrimEndingDirectorySeparator(folder).Replace(Path.DirectorySeparatorChar, '/') + '/';
-         string contains = queryAsPrefix ? $"\"{query}*\"" : $"\"{query}\"";
-         string sql = $@"
+      string path = Path.TrimEndingDirectorySeparator(folder).Replace(Path.DirectorySeparatorChar, '/') + '/';
+      string contains = queryAsPrefix ? $"\"{query}*\"" : $"\"{query}\"";
+      string sql = $@"
                 SELECT 
                     System.ItemPathDisplay,
                     System.Search.Rank
@@ -62,17 +61,16 @@ namespace CopilotArchiveSearch.Search
                 ORDER BY System.Search.Rank DESC
             ";
 
-         using var cmd = new OleDbCommand(sql, conn);
-         using var reader = cmd.ExecuteReader();
+      using var cmd = new OleDbCommand(sql, conn);
+      using var reader = cmd.ExecuteReader();
 
-         while (reader.Read())
+      while (reader.Read())
+      {
+         yield return new SearchResult
          {
-            yield return new SearchResult
-            {
-               Path = reader.GetString(0),
-               Rank = reader.GetInt32(1)
-            };
-         }
+            Path = reader.GetString(0),
+            Rank = reader.GetInt32(1)
+         };
       }
    }
 }

@@ -1,157 +1,156 @@
 ﻿
-namespace CopilotArchiveSearch.Chunked
+namespace Brx.CopilotArchiveSearch.Chunked;
+
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
+public sealed class ChunkedUtf8TextWriter : TextWriter
 {
-   using System;
-   using System.Buffers;
-   using System.Collections.Generic;
-   using System.IO;
-   using System.Text;
+   private readonly List<ReadOnlyMemory<byte>> _segments = new();
+   private readonly int _chunkSize;
+   private readonly Encoder _encoder;
 
-   public sealed class ChunkedUtf8TextWriter : TextWriter
+   private byte[] _current;
+   private int _pos;
+
+   public ChunkedUtf8TextWriter(int chunkSize = 8192)
    {
-      private readonly List<ReadOnlyMemory<byte>> _segments = new();
-      private readonly int _chunkSize;
-      private readonly Encoder _encoder;
+      _chunkSize = chunkSize;
+      _current = new byte[_chunkSize];
+      _encoder = Encoding.UTF8.GetEncoder();
+   }
 
-      private byte[] _current;
-      private int _pos;
+   public override Encoding Encoding => Encoding.UTF8;
 
-      public ChunkedUtf8TextWriter(int chunkSize = 8192)
+   public override void Write(char value)
+   {
+      Span<char> one = stackalloc char[1] { value };
+      Write(one);
+   }
+
+   public override void Write(string? value)
+   {
+      if (value is null)
+         return;
+
+      Write(value.AsSpan());
+   }
+
+   public override void Write(char[] buffer, int index, int count)
+   {
+      Write(buffer.AsSpan(index, count));
+   }
+
+   public override void Write(ReadOnlySpan<char> chars)
+   {
+      while (!chars.IsEmpty)
       {
-         _chunkSize = chunkSize;
-         _current = new byte[_chunkSize];
-         _encoder = Encoding.UTF8.GetEncoder();
-      }
+         // Ensure at least 4 bytes of space before encoding
+         if (_current.Length - _pos < 4)
+            FlushChunk();
 
-      public override Encoding Encoding => Encoding.UTF8;
+         Span<byte> dest = _current.AsSpan(_pos);
 
-      public override void Write(char value)
-      {
-         Span<char> one = stackalloc char[1] { value };
-         Write(one);
-      }
+         _encoder.Convert(
+             chars,
+             dest,
+             flush: false,
+             out int charsUsed,
+             out int bytesUsed,
+             out bool completed);
 
-      public override void Write(string? value)
-      {
-         if (value is null)
-            return;
+         chars = chars.Slice(charsUsed);
+         _pos += bytesUsed;
 
-         Write(value.AsSpan());
-      }
-
-      public override void Write(char[] buffer, int index, int count)
-      {
-         Write(buffer.AsSpan(index, count));
-      }
-
-      public override void Write(ReadOnlySpan<char> chars)
-      {
-         while (!chars.IsEmpty)
+         if (!completed)
          {
-            // Ensure at least 4 bytes of space before encoding
-            if (_current.Length - _pos < 4)
-               FlushChunk();
+            // Encoder needs more space
+            FlushChunk();
+         }
+      }
+   }
 
-            Span<byte> dest = _current.AsSpan(_pos);
+   private void FlushChunk()
+   {
+      if (_pos == 0)
+         return;
 
-            _encoder.Convert(
-                chars,
-                dest,
-                flush: false,
-                out int charsUsed,
-                out int bytesUsed,
-                out bool completed);
+      _segments.Add(new ReadOnlyMemory<byte>(_current, 0, _pos));
+      _current = new byte[_chunkSize];
+      _pos = 0;
+   }
 
-            chars = chars.Slice(charsUsed);
-            _pos += bytesUsed;
+   private void FlushEncoder()
+   {
+      bool done = false;
 
-            if (!completed)
-            {
-               // Encoder needs more space
-               FlushChunk();
-            }
+      while (!done)
+      {
+         if (_pos == _current.Length)
+            FlushChunk();
+
+         Span<byte> dest = _current.AsSpan(_pos);
+
+         _encoder.Convert(
+             ReadOnlySpan<char>.Empty,
+             dest,
+             flush: true,
+             out int charsUsed,
+             out int bytesUsed,
+             out bool completed);
+
+         _pos += bytesUsed;
+         done = completed;
+
+         if (!completed && _pos == _current.Length)
+            FlushChunk();
+      }
+   }
+
+   public ReadOnlySequence<byte> ToSequence()
+   {
+      FlushEncoder();
+      FlushChunk();
+
+      SequenceSegment? first = null;
+      SequenceSegment? last = null;
+
+      foreach (var mem in _segments)
+      {
+         var seg = new SequenceSegment(mem);
+
+         if (last is null)
+         {
+            first = seg;
+            last = seg;
+         }
+         else
+         {
+            last.SetNext(seg);
+            last = seg;
          }
       }
 
-      private void FlushChunk()
-      {
-         if (_pos == 0)
-            return;
+      if (first is null)
+         return ReadOnlySequence<byte>.Empty;
 
-         _segments.Add(new ReadOnlyMemory<byte>(_current, 0, _pos));
-         _current = new byte[_chunkSize];
-         _pos = 0;
+      return new ReadOnlySequence<byte>(first, 0, last!, last!.Memory.Length);
+   }
+
+   private sealed class SequenceSegment : ReadOnlySequenceSegment<byte>
+   {
+      public SequenceSegment(ReadOnlyMemory<byte> memory)
+      {
+         Memory = memory;
       }
 
-      private void FlushEncoder()
+      public void SetNext(SequenceSegment next)
       {
-         bool done = false;
-
-         while (!done)
-         {
-            if (_pos == _current.Length)
-               FlushChunk();
-
-            Span<byte> dest = _current.AsSpan(_pos);
-
-            _encoder.Convert(
-                ReadOnlySpan<char>.Empty,
-                dest,
-                flush: true,
-                out int charsUsed,
-                out int bytesUsed,
-                out bool completed);
-
-            _pos += bytesUsed;
-            done = completed;
-
-            if (!completed && _pos == _current.Length)
-               FlushChunk();
-         }
-      }
-
-      public ReadOnlySequence<byte> ToSequence()
-      {
-         FlushEncoder();
-         FlushChunk();
-
-         SequenceSegment? first = null;
-         SequenceSegment? last = null;
-
-         foreach (var mem in _segments)
-         {
-            var seg = new SequenceSegment(mem);
-
-            if (last is null)
-            {
-               first = seg;
-               last = seg;
-            }
-            else
-            {
-               last.SetNext(seg);
-               last = seg;
-            }
-         }
-
-         if (first is null)
-            return ReadOnlySequence<byte>.Empty;
-
-         return new ReadOnlySequence<byte>(first, 0, last!, last!.Memory.Length);
-      }
-
-      private sealed class SequenceSegment : ReadOnlySequenceSegment<byte>
-      {
-         public SequenceSegment(ReadOnlyMemory<byte> memory)
-         {
-            Memory = memory;
-         }
-
-         public void SetNext(SequenceSegment next)
-         {
-            Next = next;
-            next.RunningIndex = RunningIndex + Memory.Length;
-         }
+         Next = next;
+         next.RunningIndex = RunningIndex + Memory.Length;
       }
    }
 }

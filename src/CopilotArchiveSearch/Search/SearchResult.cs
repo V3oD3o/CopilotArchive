@@ -1,4 +1,4 @@
-﻿namespace CopilotArchiveSearch.Search;
+﻿namespace Brx.CopilotArchiveSearch.Search;
 
 public class SearchResult
 {
