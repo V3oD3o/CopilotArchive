@@ -1,0 +1,108 @@
+name: Build and Release CopilotArchive
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore CopilotArchive.sln
+
+      - name: Build
+        run: dotnet build CopilotArchive.sln --configuration Release
+
+      # --- FIRST EXECUTABLE ---
+      - name: Publish CopilotArchiveSync
+        run: |
+          dotnet publish src/CopilotArchiveSync/CopilotArchiveSync.csproj \
+            -c Release \
+            -r win-x64 \
+            --self-contained true \
+            -o publish/sync-win-x64
+
+      - name: Upload Sync Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CopilotArchiveSync-win-x64
+          path: publish/sync-win-x64/
+
+      # --- SECOND EXECUTABLE ---
+      - name: Publish CopilotArchiveSearch
+        run: |
+          dotnet publish src/CopilotArchiveSearch/CopilotArchiveSearch.csproj \
+            -c Release \
+            -r win-x64 \
+            --self-contained true \
+            -o publish/search-win-x64
+
+      - name: Upload Search Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CopilotArchiveSearch-win-x64
+          path: publish/search-win-x64/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Download both artifacts
+      - name: Download Sync Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CopilotArchiveSync-win-x64
+          path: release/sync/
+
+      - name: Download Search Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CopilotArchiveSearch-win-x64
+          path: release/search/
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: "CopilotArchive ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+
+      # Upload both executables to the release
+      - name: Upload Sync EXE
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: release/sync/CopilotArchiveSync.exe
+          asset_name: CopilotArchiveSync.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Search EXE
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: release/search/CopilotArchiveSearch.exe
+          asset_name: CopilotArchiveSearch.exe
+          asset_content_type: application/octet-stream
