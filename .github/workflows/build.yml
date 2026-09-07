@@ -1,5 +1,8 @@
 name: Build and Release CopilotArchive
 
+permissions:
+  contents: write
+  
 on:
   push:
     tags:
