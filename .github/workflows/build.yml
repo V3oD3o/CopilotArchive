@@ -82,8 +82,8 @@ jobs:
       # Create ZIP containing both apps
       - name: Create Combined ZIP
         run: |
-          cd release
-          zip -r CopilotArchive-${{ github.ref_name }}.zip combined
+          cd release/combined
+          zip -r CopilotArchive-${{ github.ref_name }}.zip .
 
       - name: Create GitHub Release
         id: create_release
