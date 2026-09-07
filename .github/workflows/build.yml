@@ -83,7 +83,7 @@ jobs:
       - name: Create Combined ZIP
         run: |
           cd release/combined
-          zip -r CopilotArchive-${{ github.ref_name }}.zip .
+          zip -r ../CopilotArchive-${{ github.ref_name }}.zip .
 
       - name: Create GitHub Release
         id: create_release
