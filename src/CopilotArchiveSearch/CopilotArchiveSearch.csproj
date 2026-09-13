@@ -10,13 +10,13 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Resources\IDR_X004_DEV.ico</ApplicationIcon>
 
-    <AssemblyName>CopilotArhiveSearch</AssemblyName>
-    <RootNamespace>Brx.CopilotArhiveSearch</RootNamespace>
+    <AssemblyName>CopilotArchiveSearch</AssemblyName>
+    <RootNamespace>Brx.CopilotArchiveSearch</RootNamespace>
     <CLSCompliant>true</CLSCompliant>
 
-    <AssemblyTitle>CopilotArhiveSearch</AssemblyTitle>
+    <AssemblyTitle>CopilotArchiveSearch</AssemblyTitle>
     <Company>N/A</Company>
-    <Product>CopilotArhiveSearch</Product>
+    <Product>CopilotArchiveSearch</Product>
     <Copyright>Copyright (C) 2026 Daniel Vargha</Copyright>
 
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>

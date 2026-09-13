@@ -42,7 +42,7 @@ public static class MarkdownRenderer
    private static string LoadCss()
    {
       var asm = typeof(MarkdownRenderer).Assembly;
-      using var stream = asm.GetManifestResourceStream("CopilotArchiveSearch.Resources.markdown-dark.css");
+      using var stream = asm.GetManifestResourceStream("Brx.CopilotArchiveSearch.Resources.markdown-dark.css");
       if (stream == null)
       {
          return "body { font-family: 'Segoe UI', sans-serif; margin: 20px; }";
